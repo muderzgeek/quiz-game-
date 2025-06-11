@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div id="start-screen" class="flex flex-col items-center justify-center h-screen">
+        <h1 class="text-4xl font-bold mb-4">Quiz Game</h1>
+        <p class="text-lg mb-6">Select a category to start the quiz!</p>
+        <select id="category-select" class="p-2 mb-4 border rounded">
+            <option value="general">General Knowledge</option>
+            <option value="science">Science</option>
+            <option value="history">History</option>
+            <option value="technology">Technology</option>
+        </select>
+        <button id="start-btn" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Start Quiz</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden flex flex-col items-center justify-center h-screen">
+        <div class="bg-white p-6 rounded shadow-md w-full max-w-md">
+            <div class="flex justify-between mb-4">
+                <span id="timer" class="text-lg">Time: 30s</span>
+                <span id="question-number" class="text-lg">Question 1/10</span>
+            </div>
+            <h2 id="question" class="text-xl mb-4"></h2>
+            <div id="options" class="space-y-2"></div>
+            <button id="next-btn" class="bg-blue-500 text-white px-4 py-2 mt-4 rounded hover:bg-blue-600 w-full" disabled>Next</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center h-screen">
+        <h1 class="text-3xl font-bold mb-4">Quiz Completed!</h1>
+        <p id="score" class="text-xl mb-4"></p>
+        <div id="review" class="bg-white p-6 rounded shadow-md w-full max-w-md"></div>
+        <button id="restart-btn" class="bg-blue-500 text-white px-6 py-2 mt-4 rounded hover:bg-blue-600">Restart Quiz</button>
+    </div>
+
+    <script>
+        const questions = {
+            general: [
+                { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Madrid"], answer: "Paris" },
+                { question: "Which planet is known as the Red Planet?", options: ["Mars", "Jupiter", "Venus", "Mercury"], answer: "Mars" },
+                { question: "What is the largest mammal?", options: ["Blue Whale", "Elephant", "Giraffe", "Hippopotamus"], answer: "Blue Whale" },
+                { question: "Who painted the Mona Lisa?", options: ["Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso", "Claude Monet"], answer: "Leonardo da Vinci" },
+                { question: "What is the currency of Japan?", options: ["Yen", "Dollar", "Euro", "Pound"], answer: "Yen" },
+                { question: "Which element is represented by 'O' in the periodic table?", options: ["Oxygen", "Osmium", "Oganesson", "Ozone"], answer: "Oxygen" },
+                { question: "What is the longest river in the world?", options: ["Nile", "Amazon", "Yangtze", "Mississippi"], answer: "Nile" },
+                { question: "Who wrote 'Pride and Prejudice'?", options: ["Jane Austen", "Charlotte Brontë", "Emily Dickinson", "Virginia Woolf"], answer: "Jane Austen" },
+                { question: "What is the smallest country by land area?", options: ["Vatican City", "Monaco", "Nauru", "San Marino"], answer: "Vatican City" },
+                { question: "Which gas is most abundant in Earth's atmosphere?", options: ["Nitrogen", "Oxygen", "Carbon Dioxide", "Argon"], answer: "Nitrogen" }
+            ],
+            science: [
+                { question: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Fe", "Cu"], answer: "Au" },
+                { question: "What gas do plants absorb from the atmosphere?", options: ["Carbon Dioxide", "Oxygen", "Nitrogen", "Helium"], answer: "Carbon Dioxide" },
+                { question: "What is the primary source of energy for Earth's climate system?", options: ["Sun", "Moon", "Geothermal", "Wind"], answer: "Sun" },
+                { question: "Which planet has the most moons?", options: ["Saturn", "Jupiter", "Uranus", "Neptune"], answer: "Jupiter" },
+                { question: "What is the unit of electrical resistance?", options: ["Ohm", "Volt", "Ampere", "Watt"], answer: "Ohm" },
+                { question: "What is the main source of energy in a food chain?", options: ["Sunlight", "Water", "Soil", "Air"], answer: "Sunlight" },
+                { question: "Which particle carries a negative charge?", options: ["Electron", "Proton", "Neutron", "Photon"], answer: "Electron" },
+                { question: "What is the boiling point of water in Celsius?", options: ["100", "0", "50", "25"], answer: "100" },
+                { question: "Which organ pumps blood in the human body?", options: ["Heart", "Lung", "Liver", "Kidney"], answer: "Heart" },
+                { question: "What type of bond involves the sharing of electrons?", options: ["Covalent", "Ionic", "Metallic", "Hydrogen"], answer: "Covalent" }
+            ],
+            history: [
+                { question: "Who was the first President of the United States?", options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"], answer: "George Washington" },
+                { question: "In which year did World War II end?", options: ["1945", "1939", "1941", "1948"], answer: "1945" },
+                { question: "Who was the Egyptian queen famous for her relationship with Julius Caesar?", options: ["Cleopatra", "Nefertiti", "Hatshepsut", "Isis"], answer: "Cleopatra" },
+                { question: "What was the name of the ship that carried the Pilgrims to America in 1620?", options: ["Mayflower", "Santa Maria", "Nina", "Pinta"], answer: "Mayflower" },
+                { question: "Which empire was ruled by Genghis Khan?", options: ["Mongol Empire", "Roman Empire", "Ottoman Empire", "Byzantine Empire"], answer: "Mongol Empire" },
+                { question: "What was the primary cause of the French Revolution?", options: ["Social Inequality", "Famine", "War", "Disease"], answer: "Social Inequality" },
+                { question: "Who was the first man to walk on the moon?", options: ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "John Glenn"], answer: "Neil Armstrong" },
+                { question: "Which ancient wonder was located in Alexandria?", options: ["Lighthouse of Alexandria", "Hanging Gardens", "Colossus of Rhodes", "Temple of Artemis"], answer: "Lighthouse of Alexandria" },
+                { question: "What was the name of the treaty that ended World War I?", options: ["Treaty of Versailles", "Treaty of Paris", "Treaty of Tordesillas", "Treaty of Ghent"], answer: "Treaty of Versailles" },
+                { question: "Who was the leader of the Soviet Union during World War II?", options: ["Joseph Stalin", "Vladimir Lenin", "Leon Trotsky", "Nikita Khrushchev"], answer: "Joseph Stalin" }
+            ],
+            technology: [
+                { question: "What does CPU stand for?", options: ["Central Processing Unit", "Computer Personal Unit", "Control Processing Unit", "Core Processing Unit"], answer: "Central Processing Unit" },
+                { question: "Who co-founded Microsoft Corporation?", options: ["Bill Gates", "Steve Jobs", "Larry Page", "Mark Zuckerberg"], answer: "Bill Gates" },
+                { question: "What is the primary function of a router?", options: ["Direct network traffic", "Store data", "Process graphics", "Run applications"], answer: "Direct network traffic" },
+                { question: "Which company developed the first commercially successful personal computer?", options: ["Apple", "IBM", "Microsoft", "Dell"], answer: "IBM" },
+                { question: "What does HTML stand for?", options: ["HyperText Markup Language", "HighText Machine Language", "HyperTool Markup Language", "HomeText Markup Language"], answer: "HyperText Markup Language" },
+                { question: "Which programming language is known for its use in web development and is often paired with HTML?", options: ["JavaScript", "Python", "C++", "Java"], answer: "JavaScript" },
+                { question: "What is the name of the first web browser?", options: ["WorldWideWeb", "Netscape", "Mosaic", "Internet Explorer"], answer: "WorldWideWeb" },
+                { question: "What does USB stand for?", options: ["Universal Serial Bus", "Uniform System Bus", "Universal System Base", "Unique Serial Bus"], answer: "Universal Serial Bus" },
+                { question: "Which company created the Android operating system?", options: ["Google", "Apple", "Microsoft", "Samsung"], answer: "Google" },
+                { question: "What is the term for a malicious software program?", options: ["Virus", "Driver", "Firmware", "Script"], answer: "Virus" }
+            ]
+        };
+
+        let currentCategory = '';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let timeLeft = 30;
+        let timerInterval;
+        let selectedOption = null;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const nextBtn = document.getElementById('next-btn');
+        const timerElement = document.getElementById('timer');
+        const questionNumberElement = document.getElementById('question-number');
+        const scoreElement = document.getElementById('score');
+        const reviewElement = document.getElementById('review');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const categorySelect = document.getElementById('category-select');
+
+        function startQuiz() {
+            currentCategory = categorySelect.value;
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            selectedOption = null;
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            nextBtn.disabled = true;
+            loadQuestion();
+            startTimer();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentCategory][currentQuestionIndex];
+            questionElement.textContent = question.question;
+            questionNumberElement.textContent = `Question ${currentQuestionIndex + 1}/10`;
+            optionsElement.innerHTML = '';
+            selectedOption = null;
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('bg-gray-200', 'p-2', 'rounded', 'w-full', 'hover:bg-gray-300', 'transition-colors');
+                button.addEventListener('click', () => selectOption(option, button));
+                optionsElement.appendChild(button);
+            });
+            nextBtn.disabled = true;
+            timeLeft = 30;
+            timerElement.textContent = `Time: ${timeLeft}s`;
+        }
+
+        function selectOption(option, button) {
+            selectedOption = option;
+            // Highlight selected option
+            Array.from(optionsElement.children).forEach(btn => {
+                btn.classList.remove('bg-blue-300', 'text-white');
+                btn.classList.add('bg-gray-200');
+            });
+            button.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+            button.classList.add('bg-blue-300', 'text-white');
+            nextBtn.disabled = false;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval); // Clear any existing timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `Time: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    userAnswers.push({
+                        question: questions[currentCategory][currentQuestionIndex].question,
+                        selected: selectedOption || 'No answer',
+                        correct: questions[currentCategory][currentQuestionIndex].answer
+                    });
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            clearInterval(timerInterval);
+            if (selectedOption) {
+                const question = questions[currentCategory][currentQuestionIndex];
+                userAnswers.push({
+                    question: question.question,
+                    selected: selectedOption,
+                    correct: question.answer
+                });
+                if (selectedOption === question.answer) {
+                    score++;
+                }
+            }
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 10) {
+                loadQuestion();
+                startTimer();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            scoreElement.textContent = `Your Score: ${score}/10`;
+            reviewElement.innerHTML = '';
+            userAnswers.forEach((answer, index) => {
+                const reviewItem = document.createElement('div');
+                reviewItem.classList.add('mb-4');
+                reviewItem.innerHTML = `
+                    <p><strong>Question ${index + 1}:</strong> ${answer.question}</p>
+                    <p><strong>Your Answer:</strong> ${answer.selected}</p>
+                    <p><strong>Correct Answer:</strong> ${answer.correct}</p>
+                    <p class="${answer.selected === answer.correct ? 'text-green-500' : 'text-red-500'}">
+                        ${answer.selected === answer.correct ? 'Correct' : 'Incorrect'}
+                    </p>
+                `;
+                reviewElement.appendChild(reviewItem);
+            });
+        }
+
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', () => {
+            resultScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
